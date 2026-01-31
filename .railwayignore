@@ -1,0 +1,17 @@
+# Additional files to exclude during Railway deployment
+apps/extension
+apps/sdk
+Jenkins
+dynamicconfig
+var
+reports
+docker-data
+*.test.ts
+*.spec.ts
+*.test.tsx
+*.spec.tsx
+**/__tests__/**
+**/.vscode/**
+**/.idea/**
+.github
+.devcontainer

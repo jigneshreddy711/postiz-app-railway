@@ -1,0 +1,23 @@
+# Ultra-minimal Railway config using nixpacks
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = [
+  "npm install -g pnpm@10.6.1",
+  "pnpm install --prod --frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "pnpm run prisma-generate",
+  "NODE_OPTIONS='--max-old-space-size=2048' pnpm -r --filter ./apps/backend --filter ./apps/frontend run build",
+  "rm -rf apps/extension apps/sdk apps/orchestrator .nx .git",
+  "find . -name '*.test.ts' -delete",
+  "find . -name '*.map' -delete"
+]
+
+[start]
+cmd = "pnpm run pm2"

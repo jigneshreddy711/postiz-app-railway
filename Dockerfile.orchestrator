@@ -1,0 +1,46 @@
+# Orchestrator-only Docker build
+FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat python3 make g++
+
+FROM base AS deps
+WORKDIR /app
+RUN npm install -g pnpm@10.6.1
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/orchestrator/package.json ./apps/orchestrator/
+COPY libraries/helpers/package.json ./libraries/helpers/
+COPY libraries/nestjs-libraries/package.json ./libraries/nestjs-libraries/
+RUN pnpm install --prod --filter ./apps/orchestrator
+
+FROM base AS builder
+WORKDIR /app
+RUN npm install -g pnpm@10.6.1
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY libraries ./libraries
+COPY apps/orchestrator ./apps/orchestrator
+COPY package.json pnpm-workspace.yaml ./
+
+RUN pnpm --filter ./libraries/nestjs-libraries run prisma-generate
+RUN NODE_OPTIONS="--max-old-space-size=1024" pnpm --filter ./apps/orchestrator run build
+
+FROM node:22-alpine AS runner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+RUN npm install -g pnpm@10.6.1 && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S orchestrator -u 1001
+
+COPY --from=builder --chown=orchestrator:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=orchestrator:nodejs /app/apps/orchestrator/dist ./apps/orchestrator/dist
+COPY --from=builder --chown=orchestrator:nodejs /app/apps/orchestrator/package.json ./apps/orchestrator/
+COPY --from=builder --chown=orchestrator:nodejs /app/libraries ./libraries
+COPY --from=builder --chown=orchestrator:nodejs /app/package.json ./
+COPY --from=builder --chown=orchestrator:nodejs /app/pnpm-workspace.yaml ./
+
+USER orchestrator
+ENV NODE_ENV=production
+EXPOSE 3001
+
+CMD ["pnpm", "--filter", "./apps/orchestrator", "start"]

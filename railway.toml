@@ -1,18 +1,14 @@
 [build]
-    builder = "nixpacks"
-    buildCommand = "pnpm install && pnpm run build"
-
+    builder = "dockerfile"
+    dockerfilePath = "Dockerfile"
+    
 [deploy]
+    numReplicas = 1
     startCommand = "pnpm run pm2"
     restartPolicyType = "on_failure"
     restartPolicyMaxRetries = 10
-
-[phases.setup]
-    nixPkgs = ['nodejs', 'python3', 'pnpm']
-    aptPkgs = ['build-essential', 'libudev-dev']
-
-[phases.install]
-    cmds = ["pnpm install"]
-
-[phases.build]
-    cmds = ["pnpm run prisma-generate", "pnpm run build"]
+    
+# Optimize for Railway free tier
+[build.env]
+    NODE_ENV = "production"
+    NODE_OPTIONS = "--max-old-space-size=2048"

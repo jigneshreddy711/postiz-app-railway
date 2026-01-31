@@ -1,0 +1,13 @@
+# Backend Service Configuration
+[build]
+    builder = "dockerfile"
+    dockerfilePath = "Dockerfile.backend"
+
+[deploy]
+    startCommand = "pnpm --filter ./apps/backend start"
+    restartPolicyType = "on_failure"
+    restartPolicyMaxRetries = 10
+
+[build.env]
+    NODE_ENV = "production"
+    NODE_OPTIONS = "--max-old-space-size=1536"

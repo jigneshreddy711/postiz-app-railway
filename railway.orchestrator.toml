@@ -1,0 +1,13 @@
+# Orchestrator Service Configuration
+[build]
+    builder = "dockerfile"
+    dockerfilePath = "Dockerfile.orchestrator"
+
+[deploy]
+    startCommand = "pnpm --filter ./apps/orchestrator start"
+    restartPolicyType = "on_failure"
+    restartPolicyMaxRetries = 10
+
+[build.env]
+    NODE_ENV = "production"
+    NODE_OPTIONS = "--max-old-space-size=1024"

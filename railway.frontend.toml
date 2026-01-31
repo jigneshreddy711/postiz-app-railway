@@ -1,0 +1,13 @@
+# Frontend Service Configuration
+[build]
+    builder = "dockerfile"
+    dockerfilePath = "Dockerfile.frontend"
+
+[deploy]
+    startCommand = "pnpm --filter ./apps/frontend start"
+    restartPolicyType = "on_failure"
+    restartPolicyMaxRetries = 10
+
+[build.env]
+    NODE_ENV = "production"
+    NODE_OPTIONS = "--max-old-space-size=1536"
