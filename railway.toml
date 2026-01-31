@@ -1,3 +1,18 @@
+[build]
+    builder = "nixpacks"
+    buildCommand = "pnpm install && pnpm run build"
+
+[deploy]
+    startCommand = "pnpm run pm2"
+    restartPolicyType = "on_failure"
+    restartPolicyMaxRetries = 10
+
 [phases.setup]
-    nixPkgs = ['nodejs', 'python3']
+    nixPkgs = ['nodejs', 'python3', 'pnpm']
     aptPkgs = ['build-essential', 'libudev-dev']
+
+[phases.install]
+    cmds = ["pnpm install"]
+
+[phases.build]
+    cmds = ["pnpm run prisma-generate", "pnpm run build"]

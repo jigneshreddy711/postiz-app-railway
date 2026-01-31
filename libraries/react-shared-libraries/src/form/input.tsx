@@ -2,7 +2,7 @@
 
 import {
   DetailedHTMLProps,
-  FC,
+  forwardRef,
   InputHTMLAttributes,
   ReactNode,
   useEffect,
@@ -12,7 +12,8 @@ import { clsx } from 'clsx';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { TranslatedLabel } from '../translation/translated-label';
 
-export const Input: FC<
+export const Input = forwardRef<
+  HTMLInputElement,
   DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
     removeError?: boolean;
     error?: any;
@@ -24,7 +25,7 @@ export const Input: FC<
     translationKey?: string;
     translationParams?: Record<string, string | number>;
   }
-> = (props) => {
+>((props, ref) => {
   const {
     label,
     icon,
@@ -68,6 +69,7 @@ export const Input: FC<
       >
         {icon && <div className="ps-[16px]">{icon}</div>}
         <input
+          ref={ref}
           className={clsx(
             'h-full bg-transparent outline-none flex-1 text-[14px] text-textColor',
             icon ? 'pl-[8px] pe-[16px]' : 'px-[16px]'
@@ -81,4 +83,6 @@ export const Input: FC<
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
