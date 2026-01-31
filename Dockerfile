@@ -15,7 +15,7 @@ COPY apps/orchestrator/package.json ./apps/orchestrator/
 COPY libraries/*/package.json ./libraries/
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build stage
 FROM base AS builder

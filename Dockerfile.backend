@@ -10,7 +10,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 COPY libraries/helpers/package.json ./libraries/helpers/
 COPY libraries/nestjs-libraries/package.json ./libraries/nestjs-libraries/
-RUN pnpm install --prod --filter ./apps/backend
+RUN pnpm install --filter ./apps/backend --no-frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
