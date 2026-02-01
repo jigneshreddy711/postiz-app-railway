@@ -15,7 +15,7 @@ RUN npm install -g pnpm@10.6.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json apps/backend/
 COPY apps/orchestrator/package.json apps/orchestrator/
-COPY libraries/*/package.json libraries/
+COPY libraries/ libraries/
 
 # Disable lifecycle scripts (Prisma later)
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
