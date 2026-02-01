@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.6.1",
   "scripts": {
     "dev": "pnpm run --filter ./apps/backend --filter ./apps/frontend --parallel dev",
+    "start": "pnpm run pm2",
     "dev:all": "pnpm run --filter ./apps/orchestrator --filter ./apps/backend --filter ./apps/frontend --parallel dev",
     "pm2": "pnpm run pm2-run",
     "publish-sdk": "pnpm run --filter ./apps/sdk publish",
@@ -195,6 +196,7 @@
     "nostr-tools": "^2.18.2",
     "openai": "^6.2.0",
     "p-limit": "^3.1.0",
+    "pm2": "^5.4.3",
     "parse5": "^6.0.1",
     "polotno": "^2.10.5",
     "posthog-js": "^1.178.0",
