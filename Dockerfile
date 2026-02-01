@@ -49,6 +49,8 @@ RUN pnpm -r \
 FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat
 
+RUN npm install -g pnpm@10.6.1
+
 WORKDIR /app
 
 RUN addgroup -g 1001 -S nodejs && \
