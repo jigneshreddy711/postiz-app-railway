@@ -319,7 +319,7 @@
   "pnpm": {
     "overrides": {
       "next": "14.2.35",
-      "reflect-metadata": "0.1.14"
+      "reflect-metadata": "0.2.2"
     },
     "onlyBuiltDependencies": [
       "bcrypt"
