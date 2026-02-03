@@ -3,14 +3,10 @@ initializeSentry('backend', true);
 
 import { loadSwagger } from '@gitroom/helpers/swagger/load.swagger';
 import { json } from 'express';
-import { Runtime } from '@temporalio/worker';
-Runtime.install({ shutdownSignals: [] });
 
-process.env.TZ = 'UTC';
-
-import cookieParser from 'cookie-parser';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 import { SubscriptionExceptionFilter } from '@gitroom/backend/services/auth/permissions/subscription.exception';
@@ -18,11 +14,19 @@ import { HttpExceptionFilter } from '@gitroom/nestjs-libraries/services/exceptio
 import { ConfigurationChecker } from '@gitroom/helpers/configuration/configuration.checker';
 import { startMcp } from '@gitroom/nestjs-libraries/chat/start.mcp';
 
+process.env.TZ = 'UTC';
+
+// ✅ Guard Temporal
+if (process.env.ENABLE_TEMPORAL === 'true' && process.env.TEMPORAL_ADDRESS) {
+  const { Runtime } = require('@temporalio/worker');
+  Runtime.install({ shutdownSignals: [] });
+}
+
 async function start() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
     cors: {
-      ...(!process.env.NOT_SECURED ? { credentials: true } : {}),
+      credentials: !process.env.NOT_SECURED,
       allowedHeaders: [
         'Content-Type',
         'Authorization',
@@ -33,11 +37,9 @@ async function start() {
         'onboarding',
         'activate',
         'x-copilotkit-runtime-client-gql-version',
-        ...(process.env.NOT_SECURED ? ['auth', 'showorg', 'impersonate'] : []),
       ],
       origin: [
         process.env.FRONTEND_URL,
-        'http://localhost:6274',
         ...(process.env.MAIN_URL ? [process.env.MAIN_URL] : []),
       ],
     },
@@ -45,17 +47,10 @@ async function start() {
 
   await startMcp(app);
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-    })
-  );
-
-  app.use('/copilot/*', (req: any, res: any, next: any) => {
-    json({ limit: '50mb' })(req, res, next);
-  });
-
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.use('/copilot/*', json({ limit: '50mb' }));
   app.use(cookieParser());
+
   app.useGlobalFilters(new SubscriptionExceptionFilter());
   app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -63,15 +58,10 @@ async function start() {
 
   const port = process.env.PORT || 3000;
 
-  try {
-    await app.listen(port);
+  await app.listen(port, '0.0.0.0');
+  Logger.log(`🚀 Backend running on port ${port}`);
 
-    checkConfiguration(); // Do this last, so that users will see obvious issues at the end of the startup log without having to scroll up.
-
-    Logger.log(`🚀 Backend is running on: http://localhost:${port}`);
-  } catch (e) {
-    Logger.error(`Backend failed to start on port ${port}`, e);
-  }
+  checkConfiguration();
 }
 
 function checkConfiguration() {
@@ -80,13 +70,9 @@ function checkConfiguration() {
   checker.check();
 
   if (checker.hasIssues()) {
-    for (const issue of checker.getIssues()) {
-      Logger.warn(issue, 'Configuration issue');
-    }
-
-    Logger.warn('Configuration issues found: ' + checker.getIssuesCount());
-  } else {
-    Logger.log('Configuration check completed without any issues');
+    checker.getIssues().forEach(issue =>
+      Logger.warn(issue, 'Configuration issue')
+    );
   }
 }
 
